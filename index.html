@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#39271e" />
+    <meta name="description" content="拾页，一本留给日常的私人日记。" />
+    <title>拾页 · 把日子轻轻收好</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./diary-core.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="stage" aria-label="拾页日记本">
+      <div class="book" id="book" data-state="closed" aria-busy="false">
+        <div class="leather-frame" data-tauri-drag-region aria-hidden="true"></div>
+        <div class="drag-regions" aria-hidden="true">
+          <i class="drag-edge drag-top" data-tauri-drag-region></i>
+          <i class="drag-edge drag-right" data-tauri-drag-region></i>
+          <i class="drag-edge drag-bottom" data-tauri-drag-region></i>
+          <i class="drag-edge drag-left" data-tauri-drag-region></i>
+        </div>
+        <div class="page-stack" aria-hidden="true"></div>
+        <div class="spread" id="spread" inert aria-hidden="true">
+          <article class="page page-left" aria-label="日历与历史">
+            <header class="calendar-header">
+              <div>
+                <p class="eyebrow">THE DAYS WE KEEP</p>
+                <h1 id="calendar-title">日历</h1>
+              </div>
+              <nav class="month-nav" aria-label="切换日历月份">
+                <button id="previous-month" type="button" aria-label="上个月">‹</button>
+                <button id="next-month" type="button" aria-label="下个月">›</button>
+              </nav>
+            </header>
+            <div class="weekdays" aria-hidden="true">
+              <span>一</span><span>二</span><span>三</span><span>四</span>
+              <span>五</span><span>六</span><span>日</span>
+            </div>
+            <div class="calendar-grid" id="calendar" role="group" aria-label="月历日期"></div>
+            <section class="daily-note" aria-label="每日寄语">
+              <span class="note-mark" aria-hidden="true">“</span>
+              <p id="daily-quote">把寻常的日子，过成值得珍藏的故事。</p>
+              <span class="note-label">一 日 一 笺</span>
+            </section>
+            <footer class="page-footer">
+              <button class="page-turn" id="previous-day" type="button" aria-label="上一天">↶ <span>上一天</span></button>
+              <span class="page-number">拾光 · 左页</span>
+            </footer>
+          </article>
+          <article class="page page-right" aria-label="日记书写页">
+            <header class="entry-header">
+              <div>
+                <p class="eyebrow">A MOMENT, A MEMORY</p>
+                <h2 id="entry-date">今日</h2>
+              </div>
+              <button class="weather" id="weather" type="button" aria-label="天气：晴，点击切换" title="点击切换天气">
+                <span class="weather-symbol" aria-hidden="true">☀</span>
+                <span class="weather-label">晴</span>
+              </button>
+            </header>
+            <div class="writing-area">
+              <label for="diary-content" class="sr-only">这一天的日记</label>
+              <textarea id="diary-content" maxlength="1000000" placeholder="此刻，有什么想留下的……" spellcheck="false"></textarea>
+            </div>
+            <footer class="page-footer">
+              <span id="save-status" data-status="saved" role="status">落笔即存</span>
+              <button id="retry-save" class="retry-save" type="button" hidden>重试保存</button>
+              <button class="page-turn" id="next-day" type="button" aria-label="下一天"><span>下一天</span> ↷</button>
+            </footer>
+          </article>
+        </div>
+        <div class="spine" aria-hidden="true"></div>
+        <div class="flip-leaves" aria-hidden="true"><i class="flip-leaf"></i><i class="flip-leaf"></i><i class="flip-leaf"></i></div>
+        <button class="cover" id="cover" type="button" aria-label="翻开拾页日记">
+          <span class="cover-front">
+            <span class="cover-ornament" aria-hidden="true">❧</span>
+            <span class="cover-eyebrow">PRIVATE JOURNAL</span>
+            <span class="cover-title">拾页</span>
+            <span class="cover-rule" aria-hidden="true"></span>
+            <time id="cover-date"></time>
+            <span class="cover-bottom">A LITTLE LIFE, WELL KEPT</span>
+          </span>
+          <span class="cover-back" aria-hidden="true"></span>
+        </button>
+        <button class="ribbon" id="close-book" type="button" aria-label="合上日记并保存" title="合上日记并保存" hidden><span>合<br />上</span></button>
+        <button class="today-bookmark" id="today-bookmark" type="button" hidden>回到今天</button>
+      </div>
+    </main>
+    <p id="app-message" role="status" aria-live="polite">点击封面，拾起今天的一页。</p>
+    <noscript>请启用 JavaScript，以翻阅日记和自动保存。</noscript>
+  </body>
+</html>

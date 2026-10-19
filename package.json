@@ -1,0 +1,11 @@
+{
+  "name": "daylore",
+  "version": "1.0.0",
+  "private": true,
+  "description": "拾页：复古拟物桌面日记交互原型",
+  "scripts": {
+    "test": "node --test --test-timeout=60000 tests/diary-core.test.cjs",
+    "test:browser": "node --test --test-timeout=60000 tests/browser.test.cjs",
+    "check": "node --check app.js && node --check diary-core.js"
+  }
+}
