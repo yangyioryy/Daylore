@@ -77,7 +77,7 @@ button:disabled:not(.cover) { opacity: .35; }
   z-index: 1;
 }
 
-.spread { position: absolute; inset: 0; display: flex; z-index: 3; border-radius: 3px 8px 7px 3px; overflow: hidden; }
+.spread { position: absolute; inset: 0; display: flex; z-index: 3; border-radius: 3px 8px 7px 3px; overflow: hidden; perspective: 2400px; }
 .page {
   position: relative;
   width: 50%;
@@ -90,13 +90,14 @@ button:disabled:not(.cover) { opacity: .35; }
   background-image: linear-gradient(90deg, #a28a5b12, transparent 18%, transparent 85%, #79613b12), url('./asset/paper.png'), radial-gradient(ellipse at center, #fbf2d9 25%, #ead8b0 78%, #c6aa7c 100%);
   background-size: 100% 100%;
 }
-.page-left { padding-right: 45px; box-shadow: inset -15px 0 22px -15px #38261375, inset 2px 0 6px #896c3330; }
+.page-left { padding-right: 45px; box-shadow: inset -15px 0 22px -15px #38261375, inset 2px 0 6px #896c3330; transform-origin: right center; backface-visibility: hidden; }
 .page-right { padding-left: 45px; box-shadow: inset 18px 0 22px -18px #38261380, inset -2px 0 6px #896c3330; }
 .page::after { position: absolute; inset: 0; border: 1px solid #baa07540; content: ''; pointer-events: none; }
 .spine { position: absolute; z-index: 4; top: 0; bottom: 0; left: calc(50% - 12px); width: 24px; background: linear-gradient(90deg, transparent, #42301c22 40%, #fff4d247 48%, #25180c33 52%, transparent); pointer-events: none; }
 
 .eyebrow { margin: 0 0 12px; font: 9px/1.4 Georgia, serif; letter-spacing: 2.4px; color: var(--muted-ink); }
 .calendar-header, .entry-header { display: flex; justify-content: space-between; align-items: center; min-height: 75px; gap: 10px; }
+.entry-header { padding-right: 30px; }
 h1, h2 { font-weight: 400; margin: 0; }
 h1 { font-size: 27px; letter-spacing: 2px; }
 h2 { font-size: 21px; line-height: 1.5; }
@@ -115,6 +116,12 @@ h2 { font-size: 21px; line-height: 1.5; }
 .day.selected::before { background: #79523d; border-color: #79523d; box-shadow: inset 0 0 0 2px #c6a17440; }
 .entry-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; margin-top: 4px; opacity: 0; }
 .has-entry .entry-dot { opacity: 1; }
+.mood-mark { position: absolute; right: 1px; bottom: 1px; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; color: #f7e7c7; background: #8b493c; box-shadow: 0 1px 1px #4f251b44; font: 11px/1 Georgia, serif; }
+.day[data-mood='calm'] .mood-mark { background: #6e7960; }
+.day[data-mood='tired'] .mood-mark { background: #82705e; }
+.day[data-mood='confused'] .mood-mark { background: #79657d; }
+.day[data-mood='hopeful'] .mood-mark { background: #a27b34; }
+.day[data-mood='sad'] .mood-mark { background: #5d7884; }
 .daily-note { position: relative; margin: auto 10px 26px; padding: 18px 16px 0; text-align: center; }
 .daily-note::before, .daily-note::after { content: ''; position: absolute; top: 0; height: 1px; width: calc(50% - 22px); background: #a48b5b55; }
 .daily-note::before { left: 0; }
@@ -122,6 +129,9 @@ h2 { font-size: 21px; line-height: 1.5; }
 .note-mark { position: absolute; top: -18px; left: calc(50% - 17px); width: 34px; color: #a28b61; font: italic 37px/1 Georgia, serif; }
 .daily-note p { margin: 9px 0 15px; font-size: 20px; line-height: 1.8; letter-spacing: 1px; }
 .note-label { color: #a08a65; font-size: 10px; }
+.note-refresh { border: 0; background: transparent; padding: 5px 8px; color: #8b714a; font-size: 13px; }
+.note-refresh:hover { color: #67422c; }
+.note-refresh[aria-busy='true'] { opacity: .55; }
 .page-footer { display: flex; align-items: center; justify-content: space-between; min-height: 28px; gap: 8px; margin-top: auto; font-size: 11px; color: var(--muted-ink); }
 .page-number { opacity: .7; font-size: 10px; letter-spacing: 2px; }
 .page-turn { border: 0; padding: 6px 0; background: transparent; font-size: 18px; line-height: 1; }
@@ -134,14 +144,14 @@ h2 { font-size: 21px; line-height: 1.5; }
 .weather:hover { color: #67432c; }
 .weather-symbol { display: block; width: 29px; height: 29px; }
 .weather-symbol svg { width: 100%; height: 100%; }
-.writing-area { flex: 1; min-height: 0; margin-top: 25px; margin-bottom: 22px; }
+.writing-area { flex: 1; min-height: 0; margin-top: 25px; margin-bottom: 12px; }
 /* 横线与行高共用 32px 周期；按本地字体度量将线定位到汉字底部，避免文字悬在线上方。 */
 textarea {
   --ink-baseline: calc(var(--rule-height) / 2 + .55em);
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 250px;
+  min-height: 140px;
   resize: none;
   border: 0;
   border-radius: 0;
@@ -163,6 +173,25 @@ textarea:focus-visible { outline: 1px solid #a78b5633; outline-offset: 5px; }
 #save-status[data-status='pending'] { color: #9b7b42; }
 #save-status[data-status='error'] { color: #8c3c2c; }
 .retry-save { background: transparent; border: 0; padding: 4px; color: #8c3c2c; font-size: 11px; text-decoration: underline; }
+
+.mood-area { position: relative; flex-shrink: 0; height: 86px; display: flex; justify-content: flex-end; align-items: center; gap: 18px; margin: 4px 0 12px; }
+.mood-hint { color: #9b835e; font-size: 12px; letter-spacing: 1px; }
+.mood-stamp { --wax: #8d4035; position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; width: 72px; height: 72px; padding: 7px; border: 3px solid #a8684e; border-radius: 46% 51% 44% 49% / 49% 43% 52% 46%; transform: rotate(-8deg); background: radial-gradient(circle at 32% 25%, #ffffff24, transparent 50%), var(--wax); color: #eac897; box-shadow: inset 0 0 0 2px #4d271a55, inset 0 0 0 4px #d5986355, inset 1px 2px 4px #e2a86f55, 1px 3px 4px #57362144; text-shadow: 0 1px #552416; }
+.mood-stamp:hover { filter: brightness(1.1); }
+.mood-stamp[data-mood=''] { background: #c9ae7f25; color: #9c7951; border: 2px dashed #ae8b5b80; box-shadow: none; text-shadow: none; }
+.mood-stamp[data-mood='calm'] { --wax: #657151; }
+.mood-stamp[data-mood='tired'] { --wax: #7a6551; }
+.mood-stamp[data-mood='confused'] { --wax: #75607b; }
+.mood-stamp[data-mood='hopeful'] { --wax: #9c7334; }
+.mood-stamp[data-mood='sad'] { --wax: #526f7c; }
+.stamp-icon { display: block; width: 32px; height: 32px; font-size: 28px; line-height: 32px; }
+.stamp-icon svg { display: block; width: 100%; height: 100%; }
+.stamp-label { font-size: 10px; line-height: 1.4; }
+.mood-picker { position: absolute; z-index: 12; right: 0; bottom: calc(100% + 6px); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 260px; max-width: 100%; gap: 5px; padding: 12px; border: 1px solid #a78a60; border-radius: 5px; background: radial-gradient(ellipse at center, #fbf0d4, #e8d4a9); box-shadow: 0 8px 22px #4a321b44, inset 0 0 0 3px #fbf0d460; }
+.mood-picker button { display: flex; align-items: center; justify-content: center; flex-direction: column; min-width: 0; gap: 3px; padding: 8px 3px; border: 1px solid transparent; border-radius: 3px; background: transparent; font-size: 12px; }
+.mood-picker button span:first-child { font-size: 22px; line-height: 1; }
+.mood-picker button:hover, .mood-picker button[aria-pressed='true'] { border-color: #a97d52; background: #b9925930; }
+.mood-picker button[data-mood=''] { grid-column: 1 / -1; flex-direction: row; border-top: 1px solid #a78a6055; padding: 5px; }
 
 .cover {
   position: absolute;
@@ -217,11 +246,28 @@ textarea:focus-visible { outline: 1px solid #a78b5633; outline-offset: 5px; }
 .book[data-state='flipping'] .flip-leaf:nth-child(3) { animation-delay: 600ms; }
 @keyframes leaf-turn { 0% { transform: rotateY(0deg); opacity: 1; } 45% { filter: brightness(.85); } 90% { opacity: 1; } 100% { transform: rotateY(-180deg); opacity: 0; } }
 
+/* 日期翻页承载当前页快照，越过书脊时换入目标日记；正反方向共用同一时序。 */
+.date-turn { position: absolute; z-index: 7; top: 0; bottom: 0; left: 50%; width: 50%; transform-style: preserve-3d; transform-origin: left center; pointer-events: none; animation: date-forward 560ms ease-in-out both; }
+.turn-face { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; border-radius: 0 5px 5px 0; box-shadow: 4px 4px 17px #4c341f44; }
+.turn-front .page { width: 100%; height: 100%; }
+.turn-back { transform: rotateY(180deg); background-color: #eedcba; background-image: url('./asset/paper.png'), radial-gradient(ellipse at center, #faf0d5, #c6aa7c); background-size: 100% 100%; }
+.book[data-direction='backward'] .date-turn { left: 0; transform-origin: right center; animation-name: date-backward; }
+@keyframes date-forward { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
+@keyframes date-backward { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+
 .book[data-state='closed'], .book[data-state='closing'] { transform: translateX(-25%); }
 .book[data-state='closed'] .spread, .book[data-state='closed'] .flip-leaves { visibility: hidden; }
 .book[data-state='closed'] .leather-frame, .book[data-state='closed'] .page-stack, .book[data-state='closed'] .spine { clip-path: inset(-15px -15px -15px 50%); }
-.book[data-state='opening'] .cover, .book[data-state='flipping'] .cover, .book[data-state='open'] .cover { transform: rotateY(-180deg); }
-.book[data-state='flipping'] .cover, .book[data-state='open'] .cover { z-index: 2; pointer-events: none; }
+.book[data-state='opening'] .cover, .book[data-state='flipping'] .cover, .book[data-state='open'] .cover, .book[data-state='turning'] .cover { transform: rotateY(-180deg); }
+.book[data-state='flipping'] .cover, .book[data-state='open'] .cover, .book[data-state='turning'] .cover { z-index: 2; pointer-events: none; }
+/* 开盖时先由封面背面承接左半书体，完全打开后才露出日历内容。 */
+.book[data-state='opening'] .page-left { visibility: hidden; }
+.book[data-state='opening'] .leather-frame, .book[data-state='opening'] .page-stack, .book[data-state='opening'] .drag-regions { animation: unfold-body 800ms ease-in-out both; }
+.book[data-state='closing'] .leather-frame, .book[data-state='closing'] .page-stack, .book[data-state='closing'] .drag-regions { animation: fold-body 800ms ease-in-out both; }
+.book[data-state='closing'] .page-left { animation: fold-calendar 800ms ease-in-out both; }
+@keyframes unfold-body { 0%, 50% { clip-path: inset(-20px -20px -20px 50%); } 100% { clip-path: inset(-20px -20px -20px 0); } }
+@keyframes fold-body { 0% { clip-path: inset(-20px -20px -20px 0); } 50%, 100% { clip-path: inset(-20px -20px -20px 50%); } }
+@keyframes fold-calendar { 0% { visibility: visible; opacity: 1; transform: rotateY(0deg); } 49% { visibility: visible; opacity: 0; transform: rotateY(90deg); } 50%, 100% { visibility: hidden; opacity: 0; transform: rotateY(90deg); } }
 #app-message { margin: 0 auto; padding: 4px 24px 20px; min-height: 45px; max-width: 760px; text-align: center; font-size: 13px; line-height: 1.7; letter-spacing: 1px; color: #8b775b; }
 noscript { display: block; text-align: center; padding: 16px; color: #763d29; }
 
@@ -245,35 +291,40 @@ noscript { display: block; text-align: center; padding: 16px; color: #763d29; }
   .daily-note { margin-left: 0; margin-right: 0; padding-left: 2px; padding-right: 2px; }
   .daily-note p { font-size: 18px; }
   .weather { min-width: 27px; padding: 0; }
+  .entry-header { padding-right: 18px; }
   .weather-symbol { width: 23px; height: 23px; }
   textarea { font-size: 17px; letter-spacing: 0; }
   .cover-title { font-size: 60px; }
   .cover-eyebrow { font-size: 8px; letter-spacing: 2px; }
   .cover-bottom { font-size: 7px; letter-spacing: 1px; }
   .ribbon { right: -16px; }
+  .mood-hint { font-size: 10px; letter-spacing: 0; }
+  .mood-area { gap: 8px; }
 }
 @media (max-width: 480px) {
-  .book { height: 590px; }
+  .book { height: 650px; }
   .page { padding: 24px 9px 20px; }
   .page-left { padding-right: 13px; }
   .page-right { padding-left: 13px; }
   .eyebrow { font-size: 6px; letter-spacing: .2px; margin-bottom: 10px; }
   h1 { font-size: 18px; letter-spacing: 0; }
   h2 { font-size: 15px; }
+  .entry-header { flex-direction: column; justify-content: flex-start; gap: 6px; min-height: 116px; padding-right: 0; }
   .calendar-header { gap: 4px; }
   .month-nav { gap: 5px; }
   .month-nav button { width: 23px; height: 23px; font-size: 20px; }
   .weekdays { font-size: 10px; }
-  .calendar-grid { grid-template-rows: repeat(6, 35px); }
+  .calendar-grid { grid-template-rows: repeat(6, 33px); }
   .day { font-size: 11px; }
   .day::before { width: 19px; height: 25px; top: 2px; }
   .daily-note { margin-bottom: 25px; }
-  .daily-note p { font-size: 16px; }
+  .daily-note p { font-size: 15px; line-height: 1.65; }
   .page-number { display: none; }
   .page-turn span, #save-status { font-size: 10px; letter-spacing: 0; }
   .page-footer { gap: 3px; flex-wrap: wrap; }
   textarea { font-size: 15px; }
   .weather { min-width: 19px; font-size: 10px; }
+  .weather { flex-direction: row; gap: 5px; }
   .weather-symbol { width: 19px; height: 19px; }
   .cover-title { font-size: 48px; letter-spacing: 8px; padding-left: 8px; }
   .cover-front::after { inset: 17px 12px; }
@@ -284,6 +335,14 @@ noscript { display: block; text-align: center; padding: 16px; color: #763d29; }
   .ribbon { right: -16px; width: 24px; top: -20px; height: 71px; padding-top: 14px; font-size: 10px; }
   .ribbon:hover { height: 76px; }
   #app-message { font-size: 12px; }
+  .mood-area { height: 68px; }
+  .mood-hint { display: none; }
+  .mood-stamp { width: 55px; height: 55px; padding: 4px; }
+  .stamp-icon { width: 25px; height: 25px; font-size: 22px; line-height: 25px; }
+  .stamp-label { font-size: 8px; }
+  .mood-picker { padding: 7px; gap: 3px; }
+  .mood-picker button { font-size: 11px; padding: 6px 0; }
+  .mood-mark { right: -1px; bottom: -1px; width: 11px; height: 11px; font-size: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -293,4 +352,8 @@ noscript { display: block; text-align: center; padding: 16px; color: #763d29; }
   .book[data-state='flipping'] .flip-leaf:nth-child(2) { animation-delay: 10ms; }
   .book[data-state='flipping'] .flip-leaf:nth-child(3) { animation-delay: 20ms; }
   .ribbon { transition: none; }
+  .date-turn { animation-duration: 60ms; }
+  .book[data-state='opening'] .leather-frame, .book[data-state='opening'] .page-stack, .book[data-state='opening'] .drag-regions,
+  .book[data-state='closing'] .leather-frame, .book[data-state='closing'] .page-stack, .book[data-state='closing'] .drag-regions,
+  .book[data-state='closing'] .page-left { animation-duration: 30ms; }
 }

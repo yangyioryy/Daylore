@@ -8,6 +8,7 @@
     <title>拾页 · 把日子轻轻收好</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./diary-core.js" defer></script>
+    <script src="./diary-services.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
   <body>
@@ -41,7 +42,7 @@
             <section class="daily-note" aria-label="每日寄语">
               <span class="note-mark" aria-hidden="true">“</span>
               <p id="daily-quote">把寻常的日子，过成值得珍藏的故事。</p>
-              <span class="note-label">一 日 一 笺</span>
+              <button class="note-refresh" id="refresh-quote" type="button" title="换一句随机寄语"><span class="note-label">一 日 一 笺</span> <span aria-hidden="true">↻</span><span class="sr-only">换一句</span></button>
             </section>
             <footer class="page-footer">
               <button class="page-turn" id="previous-day" type="button" aria-label="上一天">↶ <span>上一天</span></button>
@@ -62,6 +63,11 @@
             <div class="writing-area">
               <label for="diary-content" class="sr-only">这一天的日记</label>
               <textarea id="diary-content" maxlength="1000000" placeholder="此刻，有什么想留下的……" spellcheck="false"></textarea>
+            </div>
+            <div class="mood-area">
+              <p class="mood-hint">给这一天，留一枚心情。</p>
+              <button class="mood-stamp" id="mood-stamp" type="button" aria-label="选择今日心情印章" aria-expanded="false" aria-controls="mood-picker" data-mood=""><span class="stamp-icon" aria-hidden="true">印</span><span class="stamp-label">留个心情</span></button>
+              <div class="mood-picker" id="mood-picker" role="group" aria-label="选择火漆心情" hidden></div>
             </div>
             <footer class="page-footer">
               <span id="save-status" data-status="saved" role="status">落笔即存</span>
