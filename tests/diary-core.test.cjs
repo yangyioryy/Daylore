@@ -78,7 +78,7 @@ test('中文日期抬头包含准确星期', () => {
 test('按日期独立保存正文、天气、时间，空日期默认值独立', () => {
   const storage = memoryStorage();
   const store = core.createDiaryStore(storage);
-  const blank = { content: '', weather: 'sunny', updatedAt: null };
+  const blank = { content: '', weather: 'sunny', mood: null, updatedAt: null };
   assert.deepEqual(store.loadDiary('2026-10-19'), blank);
   const first = store.saveDiary('2026-10-19', { content: '拾起今日。\n第二行', weather: 'rainy', updatedAt: '不信任输入时间' });
   store.saveDiary('2026-10-20', { content: '明天', weather: 'snowy' });
@@ -105,7 +105,7 @@ test('未知天气安全回落，恶意属性不参与记录', () => {
   }
   const hostile = JSON.parse('{"content":"正文","weather":"rainy","__proto__":{"polluted":true}}');
   store.saveDiary('2026-10-19', hostile);
-  assert.deepEqual(Object.keys(store.loadDiary('2026-10-19')).sort(), ['content', 'updatedAt', 'weather']);
+  assert.deepEqual(Object.keys(store.loadDiary('2026-10-19')).sort(), ['content', 'mood', 'updatedAt', 'weather']);
   assert.equal({}.polluted, undefined);
   let getterCalled = false;
   assert.throws(() => store.saveDiary('2026-10-19', { get content() { getterCalled = true; return ''; } }), /正文/);
@@ -154,4 +154,86 @@ test('浏览器脚本可直接加载，localStorage 权限检查延迟到实际�
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../diary-core.js'), 'utf8'), context);
   assert.equal(typeof context.DiaryCore.localDateKey, 'function');
   assert.throws(() => context.DiaryCore.loadDiary('2026-10-19'), /禁止本地存储/);
+});
+
+test('六种心情提供冻结的中文元数据', () => {
+  assert.deepEqual(core.MOODS.map(({ id, label }) => [id, label]), [
+    ['happy', '开心'], ['calm', '平静'], ['tired', '疲惫'],
+    ['confused', '迷茫'], ['hopeful', '期待'], ['sad', '低落']
+  ]);
+  assert.equal(Object.isFrozen(core.MOODS), true);
+  for (const mood of core.MOODS) {
+    assert.equal(Object.isFrozen(mood), true);
+    assert.equal(typeof mood.symbol, 'string');
+    assert.ok(mood.symbol.length > 0);
+  }
+});
+
+test('旧记录兼容未盖章且读取不会改写原始存储', () => {
+  const storage = memoryStorage();
+  const store = core.createDiaryStore(storage);
+  const legacy = { content: '旧日记', weather: 'rainy', updatedAt: '2026-10-19T00:00:00.000Z' };
+  const raw = JSON.stringify(legacy);
+  storage.records.set('2026-10-19', raw);
+  assert.deepEqual(store.loadDiary('2026-10-19'), { ...legacy, mood: null });
+  assert.equal(storage.records.get('2026-10-19'), raw);
+  assert.equal(store.loadDiary('2026-10-20').mood, null);
+});
+
+test('六种心情按日期独立保存，重建存储接口后仍保留印章', () => {
+  const storage = memoryStorage();
+  const store = core.createDiaryStore(storage);
+  const moods = ['happy', 'calm', 'tired', 'confused', 'hopeful', 'sad'];
+  moods.forEach((mood, index) => {
+    const date = `2026-10-${19 + index}`;
+    const saved = store.saveDiary(date, { content: `日记 ${index}`, weather: 'cloudy', mood });
+    assert.equal(saved.mood, mood);
+    assert.equal(JSON.parse(storage.records.get(date)).mood, mood);
+  });
+  const reloaded = core.createDiaryStore(storage);
+  moods.forEach((mood, index) => {
+    const record = reloaded.loadDiary(`2026-10-${19 + index}`);
+    assert.equal(record.mood, mood);
+    assert.equal(record.content, `日记 ${index}`);
+    assert.equal(record.weather, 'cloudy');
+  });
+});
+
+test('未知或恶意心情安全归为未盖章，不执行 getter 或继承属性', () => {
+  const storage = memoryStorage();
+  const store = core.createDiaryStore(storage);
+  for (const mood of ['__proto__', 'constructor', 'unknown', 'HAPPY', {}, [], null, 1, true]) {
+    const saved = store.saveDiary('2026-10-19', { content: '正文', mood });
+    assert.equal(saved.mood, null);
+    assert.equal(store.loadDiary('2026-10-19').mood, null);
+    storage.records.set('2026-10-20', JSON.stringify({ content: '旧数据', mood, updatedAt: saved.updatedAt }));
+    assert.equal(store.loadDiary('2026-10-20').mood, null);
+  }
+  let getterCalled = false;
+  const data = { content: '正文', get mood() { getterCalled = true; throw new Error('不应执行'); } };
+  assert.equal(store.saveDiary('2026-10-19', data).mood, null);
+  assert.equal(getterCalled, false);
+  const inherited = Object.assign(Object.create({ mood: 'happy' }), { content: '正文' });
+  assert.equal(store.saveDiary('2026-10-19', inherited).mood, null);
+});
+
+test('正文更新与重新盖章同时保存，移除印章使用 null', () => {
+  const storage = memoryStorage();
+  const store = core.createDiaryStore(storage);
+  store.saveDiary('2026-10-19', { content: '初稿', weather: 'rainy', mood: 'tired' });
+  const revised = store.saveDiary('2026-10-19', { content: '修改后的正文', weather: 'sunny', mood: 'hopeful' });
+  assert.deepEqual(store.loadDiary('2026-10-19'), revised);
+  assert.equal(revised.content, '修改后的正文');
+  assert.equal(revised.mood, 'hopeful');
+  assert.equal(revised.weather, 'sunny');
+  store.saveDiary('2026-10-19', { ...revised, mood: null });
+  assert.equal(core.createDiaryStore(storage).loadDiary('2026-10-19').mood, null);
+});
+
+test('只有心情印章的日期仍按正文是否非空判断日记', () => {
+  const storage = memoryStorage();
+  const store = core.createDiaryStore(storage);
+  store.saveDiary('2026-10-19', { content: ' \n\t ', mood: 'calm' });
+  assert.equal(store.loadDiary('2026-10-19').mood, 'calm');
+  assert.equal(store.hasDiary('2026-10-19'), false);
 });

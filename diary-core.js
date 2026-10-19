@@ -8,6 +8,15 @@
   'use strict';
   const MAX_CONTENT_LENGTH = 1000000;
   const WEATHER = new Set(['sunny', 'cloudy', 'rainy', 'snowy']);
+  const MOODS = Object.freeze([
+    { id: 'happy', label: '开心', symbol: '☺' },
+    { id: 'calm', label: '平静', symbol: '☕' },
+    { id: 'tired', label: '疲惫', symbol: '☾' },
+    { id: 'confused', label: '迷茫', symbol: '?' },
+    { id: 'hopeful', label: '期待', symbol: '✧' },
+    { id: 'sad', label: '低落', symbol: '☂' },
+  ].map(mood => Object.freeze(mood)));
+  const MOOD_IDS = new Set(MOODS.map(mood => mood.id));
 
   function localDateKey(date = new Date()) {
     if (!(date instanceof Date) || Number.isNaN(date.getTime())) throw new RangeError('日期无效。');
@@ -80,7 +89,9 @@
     if (typeof content !== 'string') throw new TypeError('日记正文必须为字符串。');
     if (content.length > MAX_CONTENT_LENGTH) throw new RangeError(`日记正文长度不能超过 ${MAX_CONTENT_LENGTH} 字符。`);
     const weather = ownValue(data, 'weather');
-    return { content, weather: WEATHER.has(weather) ? weather : 'sunny' };
+    const mood = ownValue(data, 'mood');
+    // 旧记录与未知心情统一视为未盖章，不改变原始存储内容。
+    return { content, weather: WEATHER.has(weather) ? weather : 'sunny', mood: MOOD_IDS.has(mood) ? mood : null };
   }
 
   function createDiaryStore(storage) {
@@ -96,7 +107,7 @@
       loadDiary(date) {
         parseDate(date);
         const raw = storage.getItem(date);
-        if (raw === null) return { content: '', weather: 'sunny', updatedAt: null };
+        if (raw === null) return { content: '', weather: 'sunny', mood: null, updatedAt: null };
         try {
           const data = JSON.parse(raw);
           const record = normalizeData(data);
@@ -118,5 +129,5 @@
   function loadDiary(date) { return createDiaryStore(root.localStorage).loadDiary(date); }
   function hasDiary(date) { return loadDiary(date).content.trim().length > 0; }
 
-  return Object.freeze({ MAX_CONTENT_LENGTH, localDateKey, parseDate, shiftDay, shiftMonth, monthGrid, formatHeading, createDiaryStore, saveDiary, loadDiary, hasDiary });
+  return Object.freeze({ MAX_CONTENT_LENGTH, MOODS, localDateKey, parseDate, shiftDay, shiftMonth, monthGrid, formatHeading, createDiaryStore, saveDiary, loadDiary, hasDiary });
 });
