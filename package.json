@@ -1,11 +1,16 @@
 {
   "name": "daylore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "拾页：复古拟物桌面日记交互原型",
   "scripts": {
     "test": "node --test --test-timeout=60000 tests/diary-core.test.cjs tests/diary-services.test.cjs",
     "test:browser": "node --test --test-timeout=60000 tests/browser.test.cjs",
-    "check": "node --check app.js && node --check diary-core.js && node --check diary-services.js"
+    "check": "node --check app.js && node --check diary-core.js && node --check diary-services.js",
+    "tauri": "tauri",
+    "prepare:desktop": "node scripts/prepare-desktop.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.12.3"
   }
 }

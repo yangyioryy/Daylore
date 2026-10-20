@@ -1,3 +1,38 @@
-plan/
-doc/
-.playwright-mcp/
+# 本地文档、计划、测试与 Agent 指令
+/doc/
+/plan/
+/tests/
+AGENT.md
+AGENTS.md
+/可能改进.txt
+
+# 依赖、自动化记录与构建输出
+node_modules/
+/.playwright-mcp/
+/dist/
+/build/
+/release/
+/releases/
+/out/
+target/
+/src-tauri/gen/
+# 仅保留桌面构建配置引用的图标，不提交其他平台的自动生成素材
+/src-tauri/icons/*
+!/src-tauri/icons/32x32.png
+!/src-tauri/icons/128x128.png
+!/src-tauri/icons/128x128@2x.png
+!/src-tauri/icons/icon.icns
+!/src-tauri/icons/icon.ico
+*.exe
+*.msi
+*.msix
+*.msixbundle
+*.appx
+*.appxbundle
+*.dmg
+*.pkg
+*.AppImage
+*.deb
+*.rpm
+*.pdb
+*.log
